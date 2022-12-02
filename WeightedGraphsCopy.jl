@@ -60,6 +60,50 @@ struct WeightedGraph
 end
 
 """
+A path in a graph is a collection of vertices in a list describing a journey around the graph. Takes a vector as an argument.
+
+### Examples
+```
+p1 = Vertex((:a,:b,:c,:d))
+```
+"""
+struct Path
+  path::Vector{Vertex}
+  graph::WeightedGraph
+  function Path(p::Vector{Vertex},g::WeightedGraph)
+    isPathVerticesOnGraph(p,g) || throw(ArgumentError("One of the vertices in the path is not on the the graph"))
+    doPathVerticesHaveEdgesOnGraph(p,g) || throw(ArgumentError("Two of the vertices in the path do not share an edge on the the graph"))
+    #new(p)
+    p
+  end
+end
+
+function arePathVerticesOnGraph(p::Vector{Vertex},g::WeightedGraph)
+  for i in 1:length(p)
+    if p[i] in g.vertices
+      true
+    else false
+    end
+  end
+end
+
+function UnweightedEdges(g::WeightedGraph)
+UnweightedEdges=[]
+for i in 1:length(g.edges)
+    push!(UnweightedEdges,(g.edges[i].start, g.edges[i].finish))
+end
+end
+
+function doPathVerticesHaveEdgesOnGraph(p::Vector{Vertex},g::WeightedGraph)
+  for i in 2:length(p)
+    if (p[i-1],p[i]) in UnweightedEdges
+      true
+    else false
+    end
+  end
+end
+
+"""
 Adds an `Edge` to the `WeightedGraph`
 
 ### Example
