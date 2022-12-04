@@ -2,7 +2,7 @@ module WeightedGraphs
 
 import Graphs: SimpleGraph, add_vertices!, add_edge!
 
-export Vertex, Edge, WeightedGraph, addVertex!, addEdge!, addVertices!, addEdges!
+export Vertex, Edge, WeightedGraph, addVertex!, addEdge!, addVertices!, addEdges!, Path, UnweightedEdges, arePathVerticesOnGraph, doPathVerticesHaveEdgesOnGraph
 
 """
 A vertex in a graph. Takes a symbol as an argument.
@@ -71,9 +71,9 @@ struct Path
   path::Vector{Vertex}
   graph::WeightedGraph
   function Path(p::Vector{Vertex},g::WeightedGraph)
-    isPathVerticesOnGraph(p,g) || throw(ArgumentError("One of the vertices in the path is not on the the graph"))
+    arePathVerticesOnGraph(p,g) || throw(ArgumentError("One of the vertices in the path is not on the the graph"))
     doPathVerticesHaveEdgesOnGraph(p,g) || throw(ArgumentError("Two of the vertices in the path do not share an edge on the the graph"))
-    #new(p)
+    #new(p,g)
     p
   end
 end
@@ -81,26 +81,36 @@ end
 function arePathVerticesOnGraph(p::Vector{Vertex},g::WeightedGraph)
   for i in 1:length(p)
     if p[i] in g.vertices
-      true
-    else false
+      return true
+    else return false
     end
   end
 end
 
 function UnweightedEdges(g::WeightedGraph)
-UnweightedEdges=[]
+UnweightedEdgesOnGraph=[]
 for i in 1:length(g.edges)
-    push!(UnweightedEdges,(g.edges[i].start, g.edges[i].finish))
+    push!(UnweightedEdgesOnGraph,(Vertex(g.edges[i].start), Vertex(g.edges[i].finish)))
 end
+UnweightedEdgesOnGraph
 end
 
 function doPathVerticesHaveEdgesOnGraph(p::Vector{Vertex},g::WeightedGraph)
+  x = 0
   for i in 2:length(p)
-    if (p[i-1],p[i]) in UnweightedEdges
-      true
-    else false
+    #if (p[i-1],p[i]) in UnweightedEdges(g)
+    #  return true
+    #else return false
+    #end
+    if (p[i-1],p[i]) in UnweightedEdges(g)
+      x = x+1
     end
   end
+  if x == length(p)-1
+    true
+  else false
+  end
+  #x
 end
 
 """
