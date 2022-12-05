@@ -2,7 +2,7 @@ module WeightedGraphs
 
 import Graphs: SimpleGraph, add_vertices!, add_edge!
 
-export Vertex, Edge, WeightedGraph, addVertex!, addEdge!, addVertices!, addEdges!, Path, UnweightedEdges, arePathVerticesOnGraph, doPathVerticesHaveEdgesOnGraph
+export Vertex, Edge, WeightedGraph, addVertex!, addEdge!, addVertices!, addEdges!, Path, UnweightedEdges, arePathVerticesOnGraph, doPathVerticesHaveEdgesOnGraph, distance
 
 """
 A vertex in a graph. Takes a symbol as an argument.
@@ -17,6 +17,11 @@ v3 = Vertex(:c)
 """
 struct Vertex
   name::Symbol
+end
+
+function Base.show(io::IO, v::Vertex)
+  #print(io, join(v.name,","))
+  print(io, string(v.name))
 end
 
 """
@@ -34,6 +39,10 @@ struct Edge
   start::Symbol
   finish::Symbol
   weight::Real
+end
+
+function Base.show(io::IO, e::Edge)
+  print(io, string((e.start,e.finish,e.weight)))
 end
 
 """
@@ -59,6 +68,10 @@ struct WeightedGraph
   end
 end
 
+function Base.show(io::IO, g::WeightedGraph)
+  print(io, string(g.vertices),string(g.edges))
+end
+
 """
 A path in a graph is a collection of vertices in a list describing a journey around the graph. Takes a vector as an argument.
 
@@ -73,8 +86,8 @@ struct Path
   function Path(p::Vector{Vertex},g::WeightedGraph)
     arePathVerticesOnGraph(p,g) || throw(ArgumentError("One of the vertices in the path is not on the the graph"))
     doPathVerticesHaveEdgesOnGraph(p,g) || throw(ArgumentError("Two of the vertices in the path do not share an edge on the the graph"))
-    #new(p,g)
-    p
+    new(p,g)
+    #p
   end
 end
 
@@ -102,7 +115,7 @@ function doPathVerticesHaveEdgesOnGraph(p::Vector{Vertex},g::WeightedGraph)
     #  return true
     #else return false
     #end
-    if (p[i-1],p[i]) in UnweightedEdges(g)
+    if (p[i-1],p[i]) in UnweightedEdges(g) || (p[i],p[i-1]) in UnweightedEdges(g)
       x = x+1
     end
   end
@@ -111,6 +124,25 @@ function doPathVerticesHaveEdgesOnGraph(p::Vector{Vertex},g::WeightedGraph)
   else false
   end
   #x
+end
+
+function Base.show(io::IO, p::Path)
+  print(io, string((p.path)))
+end
+
+function distance(Path::Path)
+  TotalDistance = 0
+  j = 1
+  for i in 2:length(Path.path)
+    if (Path.path[i-1],Path.path[i]) in UnweightedEdges(Path.graph) || (Path.path[i],Path.path[i-1]) in UnweightedEdges(Path.graph) || break
+      TotalDistance = TotalDistance + Path.graph.edges[i-1].weight
+      j = j + 1
+    end
+  end
+  if j == length(Path.path)
+    return TotalDistance
+  else return Inf
+  end
 end
 
 """
