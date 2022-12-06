@@ -1,8 +1,10 @@
 module WeightedGraphs
 
 import Graphs: SimpleGraph, add_vertices!, add_edge!
+import Plots
+import GraphRecipes: graphplot
 
-export Vertex, Edge, WeightedGraph, addVertex!, addEdge!, addVertices!, addEdges!, Path, UnweightedEdges, arePathVerticesOnGraph, doPathVerticesHaveEdgesOnGraph, distance
+export Vertex, Edge, WeightedGraph, addVertex!, addEdge!, addVertices!, addEdges!, Path, arePathVerticesOnGraph, doPathVerticesHaveEdgesOnGraph, distance, plotWeightedGraph
 
 """
 A vertex in a graph. Takes a symbol as an argument.
@@ -72,6 +74,30 @@ function Base.show(io::IO, g::WeightedGraph)
   print(io, string(g.vertices),string(g.edges))
 end
 
+#= @recipe function f(g::WeightedGraph) 
+    legend -->  false
+    aspect_ratio --> :equal
+    
+end =#
+
+function plotWeightedGraph(g::WeightedGraph)
+  names = []
+  for i in 1:length(g.vertices)
+    push!(names,string(g.vertices[i]))
+  end
+  edgelabel=Dict()
+  for i in 1:length(g.edges)
+      for s in 1:length(g.vertices)
+          for f in 2:length(g.vertices)
+              if g.edges[i].start == Symbol(g.vertices[s]) && g.edges[i].finish == Symbol(g.vertices[f])
+                  push!(edgelabel,(s,f)=>g.edges[i].weight)
+              end
+          end
+      end
+  end
+  graphplot(g.graph, names=names, edgelabel=edgelabel, curves=false)
+end
+
 """
 A path in a graph is a collection of vertices in a list describing a journey around the graph. Takes a vector as an argument.
 
@@ -89,6 +115,10 @@ struct Path
     new(p,g)
     #p
   end
+end
+
+function Base.show(io::IO, p::Path)
+  print(io, string((p.path)))
 end
 
 function arePathVerticesOnGraph(p::Vector{Vertex},g::WeightedGraph)
@@ -133,8 +163,10 @@ end =#
 function doPathVerticesHaveEdgesOnGraph(p::Vector{Vertex},g::WeightedGraph)
   x = 0
   for i in 2:length(p)
-    if p[i-1] == Vertex(g.edges[i-1].start) && p[i] == Vertex(g.edges[i-1].finish) || p[i] == Vertex(g.edges[i-1].start) && p[i-1] == Vertex(g.edges[i-1].finish)
-      x = x+1
+    for j in 1:length(g.edges)
+      if p[i-1] == Vertex(g.edges[j].start) && p[i] == Vertex(g.edges[j].finish) || p[i] == Vertex(g.edges[j].start) && p[i-1] == Vertex(g.edges[j].finish)
+        x = x+1
+      end
     end
   end
   if x == length(p)-1
@@ -143,24 +175,32 @@ function doPathVerticesHaveEdgesOnGraph(p::Vector{Vertex},g::WeightedGraph)
   end
 end
 
-function Base.show(io::IO, p::Path)
-  print(io, string((p.path)))
-end
-
-function distance(Path::Path)
+function distance(P::Path)
   TotalDistance = 0
-  j = 1
-  for i in 2:length(Path.path)
+  #j = 1
+  if typeof(P) == Path
     #if (Path.path[i-1],Path.path[i]) in UnweightedEdges(Path.graph) || (Path.path[i],Path.path[i-1]) in UnweightedEdges(Path.graph) || break
-    if Path.path[i-1] == Vertex(Path.graph.edges[i-1].start) && Path.path[i] == Vertex(Path.graph.edges[i-1].finish) || Path.path[i] == Vertex(Path.graph.edges[i-1].start) && Path.path[i-1] == Vertex(Path.graph.edges[i-1].finish) || break
-      TotalDistance = TotalDistance + Path.graph.edges[i-1].weight
-      j = j + 1
+    #if Path.path[i-1] == Vertex(Path.graph.edges[i-1].start) && Path.path[i] == Vertex(Path.graph.edges[i-1].finish) || Path.path[i] == Vertex(Path.graph.edges[i-1].start) && Path.path[i-1] == Vertex(Path.graph.edges[i-1].finish) || break
+    #for i in 1:length(P.path)
+    #  TotalDistance = TotalDistance + P.graph.edges[i].weight
+    #  j = j + 1
+    #end
+    for i in 1:length(P.graph.edges)
+    #for s in 1:(length(r.path)-1)
+       for f in 2:length(P.path)
+            if ((Symbol(P.path[f-1]) == P.graph.edges[i].start) && (Symbol(P.path[f]) == P.graph.edges[i].finish)) || ((Symbol(P.path[f]) == P.graph.edges[i].start) && (Symbol(P.path[f-1]) == P.graph.edges[i].finish))
+                TotalDistance = TotalDistance + P.graph.edges[i].weight
+                #j = j + 1
+            end
+        end
     end
-  end
-  if j == length(Path.path)
     return TotalDistance
   else return Inf
   end
+  #if j == length(P.path)
+  #  return TotalDistance
+  #else return Inf
+  #end
 end
 
 """
