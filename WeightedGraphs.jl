@@ -92,15 +92,19 @@ struct Path
 end
 
 function arePathVerticesOnGraph(p::Vector{Vertex},g::WeightedGraph)
+  t = 0
   for i in 1:length(p)
     if p[i] in g.vertices
-      return true
-    else return false
+      t = t + 1
     end
+  end
+  if t == length(p)
+    true
+  else false
   end
 end
 
-function UnweightedEdges(g::WeightedGraph)
+#= function UnweightedEdges(g::WeightedGraph)
 UnweightedEdgesOnGraph=[]
 for i in 1:length(g.edges)
     push!(UnweightedEdgesOnGraph,(Vertex(g.edges[i].start), Vertex(g.edges[i].finish)))
@@ -124,6 +128,19 @@ function doPathVerticesHaveEdgesOnGraph(p::Vector{Vertex},g::WeightedGraph)
   else false
   end
   #x
+end =#
+
+function doPathVerticesHaveEdgesOnGraph(p::Vector{Vertex},g::WeightedGraph)
+  x = 0
+  for i in 2:length(p)
+    if p[i-1] == Vertex(g.edges[i-1].start) && p[i] == Vertex(g.edges[i-1].finish) || p[i] == Vertex(g.edges[i-1].start) && p[i-1] == Vertex(g.edges[i-1].finish)
+      x = x+1
+    end
+  end
+  if x == length(p)-1
+    true
+  else false
+  end
 end
 
 function Base.show(io::IO, p::Path)
@@ -134,7 +151,8 @@ function distance(Path::Path)
   TotalDistance = 0
   j = 1
   for i in 2:length(Path.path)
-    if (Path.path[i-1],Path.path[i]) in UnweightedEdges(Path.graph) || (Path.path[i],Path.path[i-1]) in UnweightedEdges(Path.graph) || break
+    #if (Path.path[i-1],Path.path[i]) in UnweightedEdges(Path.graph) || (Path.path[i],Path.path[i-1]) in UnweightedEdges(Path.graph) || break
+    if Path.path[i-1] == Vertex(Path.graph.edges[i-1].start) && Path.path[i] == Vertex(Path.graph.edges[i-1].finish) || Path.path[i] == Vertex(Path.graph.edges[i-1].start) && Path.path[i-1] == Vertex(Path.graph.edges[i-1].finish) || break
       TotalDistance = TotalDistance + Path.graph.edges[i-1].weight
       j = j + 1
     end
