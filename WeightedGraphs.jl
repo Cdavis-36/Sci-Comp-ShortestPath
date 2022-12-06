@@ -22,7 +22,6 @@ struct Vertex
 end
 
 function Base.show(io::IO, v::Vertex)
-  #print(io, join(v.name,","))
   print(io, string(v.name))
 end
 
@@ -73,12 +72,6 @@ end
 function Base.show(io::IO, g::WeightedGraph)
   print(io, string(g.vertices),string(g.edges))
 end
-
-#= @recipe function f(g::WeightedGraph) 
-    legend -->  false
-    aspect_ratio --> :equal
-    
-end =#
 
 function plotWeightedGraph(g::WeightedGraph)
   names = []
@@ -134,32 +127,6 @@ function arePathVerticesOnGraph(p::Vector{Vertex},g::WeightedGraph)
   end
 end
 
-#= function UnweightedEdges(g::WeightedGraph)
-UnweightedEdgesOnGraph=[]
-for i in 1:length(g.edges)
-    push!(UnweightedEdgesOnGraph,(Vertex(g.edges[i].start), Vertex(g.edges[i].finish)))
-end
-UnweightedEdgesOnGraph
-end
-
-function doPathVerticesHaveEdgesOnGraph(p::Vector{Vertex},g::WeightedGraph)
-  x = 0
-  for i in 2:length(p)
-    #if (p[i-1],p[i]) in UnweightedEdges(g)
-    #  return true
-    #else return false
-    #end
-    if (p[i-1],p[i]) in UnweightedEdges(g) || (p[i],p[i-1]) in UnweightedEdges(g)
-      x = x+1
-    end
-  end
-  if x == length(p)-1
-    true
-  else false
-  end
-  #x
-end =#
-
 function doPathVerticesHaveEdgesOnGraph(p::Vector{Vertex},g::WeightedGraph)
   x = 0
   for i in 2:length(p)
@@ -177,30 +144,17 @@ end
 
 function distance(P::Path)
   TotalDistance = 0
-  #j = 1
   if typeof(P) == Path
-    #if (Path.path[i-1],Path.path[i]) in UnweightedEdges(Path.graph) || (Path.path[i],Path.path[i-1]) in UnweightedEdges(Path.graph) || break
-    #if Path.path[i-1] == Vertex(Path.graph.edges[i-1].start) && Path.path[i] == Vertex(Path.graph.edges[i-1].finish) || Path.path[i] == Vertex(Path.graph.edges[i-1].start) && Path.path[i-1] == Vertex(Path.graph.edges[i-1].finish) || break
-    #for i in 1:length(P.path)
-    #  TotalDistance = TotalDistance + P.graph.edges[i].weight
-    #  j = j + 1
-    #end
     for i in 1:length(P.graph.edges)
-    #for s in 1:(length(r.path)-1)
        for f in 2:length(P.path)
             if ((Symbol(P.path[f-1]) == P.graph.edges[i].start) && (Symbol(P.path[f]) == P.graph.edges[i].finish)) || ((Symbol(P.path[f]) == P.graph.edges[i].start) && (Symbol(P.path[f-1]) == P.graph.edges[i].finish))
                 TotalDistance = TotalDistance + P.graph.edges[i].weight
-                #j = j + 1
             end
         end
     end
     return TotalDistance
   else return Inf
   end
-  #if j == length(P.path)
-  #  return TotalDistance
-  #else return Inf
-  #end
 end
 
 """
