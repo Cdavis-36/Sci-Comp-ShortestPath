@@ -1,6 +1,8 @@
 using .WeightedGraphs
 using Test
 
+# STAGE 1 - PART 3
+
 # Write a test suite for your module with the following:
      # (a) Test that creating a vertex works.
 v1 = Vertex(:a)
@@ -15,7 +17,7 @@ v5 = Vertex(:e)
       @test isa(v3, Vertex)
     end
 
-    # (b) Test that creating an edge works.
+# (b) Test that creating an edge works.
 e1=Edge(:a, :b, 7)
 e2=Edge(:a, :c, 4)
 e3=Edge(:b, :c, 5)
@@ -25,14 +27,14 @@ e3=Edge(:b, :c, 5)
        @test isa(e2, Edge)
     end
             
-    # (c) Test that creating a basic weighted graph works.
+# (c) Test that creating a basic weighted graph works.
 g=WeightedGraph()
 
     @testset "Weighted Graph" begin
         @test isa(g, WeightedGraph)
     end
 
-    # (d) Test that adds a single vertex, a vector of vertices or any number of vertices.
+# (d) Test that adds a single vertex, a vector of vertices or any number of vertices.
     @testset "Add Vertex" begin
       addVertex!(g,v1)
       @test isa(g, WeightedGraph)
@@ -53,9 +55,21 @@ g=WeightedGraph()
         @test v5 in g.vertices
    end
 
-    # (e) Tests that should throw an ArgumentError when adding vertices adds a vertex that already exists.
+# (e) Tests that should throw an ArgumentError when adding vertices adds a vertex that already exists.
    @testset "This vertex already exists" begin  
         @test_throws ArgumentError addVertex!(g,v1)
         @test_throws ArgumentError addVertices!(g, [v2,v3])
         @test_throws ArgumentError addVertices!(g, v4,v5)
     end
+
+# (f) Tests for functions that were previously used.
+    # plotWeightedGraph
+    # arePathVerticesOnGraph(p::Vector{Vertex},g::WeightedGraph)
+    # doPathVerticesHaveEdgesOnGraph(p::Vector{Vertex},g::WeightedGraph)
+    # distance(P::Path)
+
+#STAGE 2 - TESTS
+# plotWeightedGraph
+# solveTSP
+# findShortestPath
+# Path
