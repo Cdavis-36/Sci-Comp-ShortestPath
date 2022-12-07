@@ -1,10 +1,11 @@
 module WeightedGraphs
 
-import Graphs: SimpleGraph, add_vertices!, add_edge!
+import Graphs: SimpleGraph, add_vertices!, add_edge!, a_star
 import Plots
 import GraphRecipes: graphplot
+import Combinatorics: nthperm
 
-export Vertex, Edge, WeightedGraph, addVertex!, addEdge!, addVertices!, addEdges!, Path, arePathVerticesOnGraph, doPathVerticesHaveEdgesOnGraph, distance, plotWeightedGraph
+export Vertex, Edge, WeightedGraph, addVertex!, addEdge!, addVertices!, addEdges!, Path, arePathVerticesOnGraph, doPathVerticesHaveEdgesOnGraph, distance, plotWeightedGraph, findShortestPath, solveTSP
 
 """
 A vertex in a graph. Takes a symbol as an argument.
@@ -31,8 +32,8 @@ An edge in a graph. The arguments are the starting vertex (as a symbol), the end
 ### Examples
 
 ```
-e1 = Edge(:a,:b,3)
-e2 = Edge(:a,:c,10)
+e1 = WeightedGraphs.Edge(:a,:b,3)
+e2 = WeightedGraphs.Edge(:a,:c,10)
 ```
 
 """
@@ -73,6 +74,24 @@ function Base.show(io::IO, g::WeightedGraph)
   print(io, string(g.vertices),string(g.edges))
 end
 
+"""
+Plots a `WeightedGraph` with the vertices and edges labelled
+
+### Example
+```
+g = WeightedGraph()
+v1 = Vertex(:a)
+v2 = Vertex(:b)
+v3 = Vertex(:c)
+addVertices!(g,v1,v2,v3)
+
+e1 = WeightedGraphs.Edge(:a,:b,3)
+e2 = WeightedGraphs.Edge(:a,:c,10)
+addEdges!(g,e1,e2)
+
+plotWeightedGraph(g)
+```
+"""
 function plotWeightedGraph(g::WeightedGraph)
   names = []
   for i in 1:length(g.vertices)
@@ -92,11 +111,22 @@ function plotWeightedGraph(g::WeightedGraph)
 end
 
 """
-A path in a graph is a collection of vertices in a list describing a journey around the graph. Takes a vector as an argument.
+A path in a graph is a collection of vertices in a list describing a journey around the graph. Takes a vector of vertices and a 'Weighted Graph' as arguments.
 
 ### Examples
 ```
-p1 = Vertex((:a,:b,:c,:d))
+g = WeightedGraph()
+v1 = Vertex(:a)
+v2 = Vertex(:b)
+v3 = Vertex(:c)
+addVertices!(g,v1,v2,v3)
+
+e1 = WeightedGraphs.Edge(:a,:b,3)
+e2 = WeightedGraphs.Edge(:a,:c,10)
+addEdges!(g,e1,e2)
+
+julia> P1 = Path([v2,v1,v3],g)
+Vertex[a, b, c]
 ```
 """
 struct Path
@@ -114,6 +144,28 @@ function Base.show(io::IO, p::Path)
   print(io, string((p.path)))
 end
 
+"""
+Determines whether or not the vertices in a 'Path' are on the specified `WeightedGraph`. Takes a vector of vertices and a 'WeightedGraph' as arguments.
+
+### Example
+```
+g = WeightedGraph()
+v1 = Vertex(:a)
+v2 = Vertex(:b)
+v3 = Vertex(:c)
+addVertices!(g,v1,v2,v3)
+
+e1 = WeightedGraphs.Edge(:a,:b,3)
+e2 = WeightedGraphs.Edge(:a,:c,10)
+addEdges!(g,e1,e2)
+
+julia> arePathVerticesOnGraph([Vertex(:a), Vertex(:b)],g)
+true
+
+julia> arePathVerticesOnGraph([Vertex(:d)],g)
+false
+```
+"""
 function arePathVerticesOnGraph(p::Vector{Vertex},g::WeightedGraph)
   t = 0
   for i in 1:length(p)
@@ -127,6 +179,28 @@ function arePathVerticesOnGraph(p::Vector{Vertex},g::WeightedGraph)
   end
 end
 
+"""
+Determines whether or not the vertices in a 'Path' are on the specified `WeightedGraph` share an edge. Takes a vector of vertices and a 'WeightedGraph' as arguments.
+
+### Example
+```
+g = WeightedGraph()
+v1 = Vertex(:a)
+v2 = Vertex(:b)
+v3 = Vertex(:c)
+addVertices!(g,v1,v2,v3)
+
+e1 = WeightedGraphs.Edge(:a,:b,3)
+e2 = WeightedGraphs.Edge(:a,:c,10)
+addEdges!(g,e1,e2)
+
+julia> doPathVerticesHaveEdgesOnGraph([Vertex(:a), Vertex(:b)],g)
+true
+
+julia> doPathVerticesHaveEdgesOnGraph([Vertex(:b), Vertex(:c)],g)
+false
+```
+"""
 function doPathVerticesHaveEdgesOnGraph(p::Vector{Vertex},g::WeightedGraph)
   x = 0
   for i in 2:length(p)
@@ -142,19 +216,121 @@ function doPathVerticesHaveEdgesOnGraph(p::Vector{Vertex},g::WeightedGraph)
   end
 end
 
+"""
+Determines the distance of a 'Path' on the specified `WeightedGraph`. Takes a 'Path' as an argument.
+
+### Example
+```
+g = WeightedGraph()
+v1 = Vertex(:a)
+v2 = Vertex(:b)
+v3 = Vertex(:c)
+addVertices!(g,v1,v2,v3)
+
+e1 = WeightedGraphs.Edge(:a,:b,3)
+e2 = WeightedGraphs.Edge(:a,:c,10)
+addEdges!(g,e1,e2)
+
+julia> distance(Path([v2,v1,v3],g)
+13
+```
+"""
 function distance(P::Path)
   TotalDistance = 0
   if typeof(P) == Path
     for i in 1:length(P.graph.edges)
-       for f in 2:length(P.path)
-            if ((Symbol(P.path[f-1]) == P.graph.edges[i].start) && (Symbol(P.path[f]) == P.graph.edges[i].finish)) || ((Symbol(P.path[f]) == P.graph.edges[i].start) && (Symbol(P.path[f-1]) == P.graph.edges[i].finish))
-                TotalDistance = TotalDistance + P.graph.edges[i].weight
-            end
-        end
+      for f in 2:length(P.path)
+        if ((Symbol(P.path[f-1]) == P.graph.edges[i].start) && (Symbol(P.path[f]) == P.graph.edges[i].finish)) || ((Symbol(P.path[f]) == P.graph.edges[i].start) && (Symbol(P.path[f-1]) == P.graph.edges[i].finish))
+          TotalDistance = TotalDistance + P.graph.edges[i].weight
+          end
+      end
     end
     return TotalDistance
   else return Inf
   end
+end
+
+"""
+Determines the shortest 'Path' around a complete graph to hit every vertex on the specified `WeightedGraph` and create a cycle to be able to start and stop at the same vertex. Takes a 'WeightedGraph' as an argument.
+
+### Example
+```
+g = WeightedGraph()
+v1 = Vertex(:a)
+v2 = Vertex(:b)
+v3 = Vertex(:c)
+addVertices!(g,v1,v2,v3)
+
+e1 = WeightedGraphs.Edge(:a,:b,3)
+e2 = WeightedGraphs.Edge(:a,:c,10)
+e3 = WeightedGraphs.Edge(:b,:c,5)
+addEdges!(g,e1,e2,e3)
+
+julia> solveTSP(g)
+4-element Vector{Vertex}:
+ a
+ b
+ c
+ a
+```
+"""
+function solveTSP(g::WeightedGraph)
+  perms = map(k->nthperm(g.vertices,k),1:factorial(length(g.vertices)))
+  dists = []
+  for i in 1:length(perms)
+    push!(dists,distance(Path(perms[i],g)))
+  end
+  sol = nthperm(g.vertices,findmin(dists)[2])
+  push!(sol,sol[1])
+end
+
+"""
+Determines the shortest 'Path' around the specified `WeightedGraph` from a specified starting vertex to a specified ending vertex. Takes a 'Vertex" as a start, a 'Vertex' as a finish, and a 'WeightedGraph' as arguments.
+
+### Example
+```
+g = WeightedGraph()
+v1 = Vertex(:a)
+v2 = Vertex(:b)
+v3 = Vertex(:c)
+addVertices!(g,v1,v2,v3)
+
+e1 = WeightedGraphs.Edge(:a,:b,3)
+e2 = WeightedGraphs.Edge(:a,:c,10)
+e3 = WeightedGraphs.Edge(:b,:c,5)
+addEdges!(g,e1,e2,e3)
+
+julia> findShortestPath(Vertex(:a),Vertex(:c),g)
+(Path = Vertex[a, b, c], Distance = 8)
+```
+"""
+function findShortestPath(start::Vertex,finish::Vertex,g::WeightedGraph)
+edgelabel=Dict()
+for i in 1:length(g.edges)
+    for s in 1:length(g.vertices)
+        for f in 2:length(g.vertices)
+            if g.edges[i].start == Symbol(g.vertices[s]) && g.edges[i].finish == Symbol(g.vertices[f])
+                push!(edgelabel,(s,f)=>g.edges[i].weight)
+            end
+        end
+    end
+end
+w = zeros(Int,length(g.vertices),length(g.vertices))
+for i=1:length(g.vertices)
+  for j=1:length(g.vertices)
+    if haskey(edgelabel,(i,j))
+      w[i,j] = edgelabel[(i,j)]
+      w[j,i] = edgelabel[(i,j)]
+    end
+  end
+end
+ShortestPath = a_star(g.graph, findfirst(isequal(start),g.vertices),findfirst(isequal(finish),g.vertices), w)
+path = Vector{Vertex}(undef,length(ShortestPath)+1)
+for i in 1:(length(ShortestPath))
+    path[i] = g.vertices[ShortestPath[i].src]
+end
+path[length(ShortestPath)+1] = g.vertices[ShortestPath[length(ShortestPath)].dst]
+named_tuple = (Path = path,Distance = distance(Path(path,g)))
 end
 
 """
@@ -170,8 +346,8 @@ addVertex!(g,v1)
 addVertex!(g,v2)
 addVertex!(g,v3)
 
-e1 = Edge(:a,:b,3)
-e2 = Edge(:a,:c,10)
+e1 = WeightedGraphs.Edge(:a,:b,3)
+e2 = WeightedGraphs.Edge(:a,:c,10)
 addEdge!(g,e1)
 addEdge!(g,e2)
 ```
