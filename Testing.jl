@@ -1,6 +1,8 @@
 using .WeightedGraphs
 using Test
 
+# STAGE 1 - PART 3
+
 # Write a test suite for your module with the following:
      # (a) Test that creating a vertex works.
 v1 = Vertex(:a)
@@ -8,6 +10,7 @@ v2 = Vertex(:b)
 v3 = Vertex(:c)
 v4 = Vertex(:d)
 v5 = Vertex(:e)
+v6 = Vertex(:f)
    
     @testset "Vertex" begin
       @test isa(v1, Vertex)
@@ -15,24 +18,32 @@ v5 = Vertex(:e)
       @test isa(v3, Vertex)
     end
 
-    # (b) Test that creating an edge works.
-e1=Edge(:a, :b, 7)
-e2=Edge(:a, :c, 4)
-e3=Edge(:b, :c, 5)
+# (b) Test that creating an edge works.
+e1 = Edge(:a, :b, 7)
+e2 = Edge(:a, :c, 4)
+e3 = Edge(:b, :c, 9)
+e4 = Edge(:d, :e, 2)
+e5 = Edge(:c, :e, 3)
+e6 = Edge(:a, :d, 6)
+e7 = Edge(:a, :e, 9)
+e8 = Edge(:b, :d, 4)
+e9 = Edge(:b, :e, 8)
+e10= Edge(:c, :d, 2)
+
 
      @testset "Edge" begin
        @test isa(e1, Edge)
        @test isa(e2, Edge)
     end
             
-    # (c) Test that creating a basic weighted graph works.
+# (c) Test that creating a basic weighted graph works.
 g=WeightedGraph()
 
     @testset "Weighted Graph" begin
         @test isa(g, WeightedGraph)
     end
 
-    # (d) Test that adds a single vertex, a vector of vertices or any number of vertices.
+# (d) Test that adds a single vertex, a vector of vertices or any number of vertices.
     @testset "Add Vertex" begin
       addVertex!(g,v1)
       @test isa(g, WeightedGraph)
@@ -53,9 +64,86 @@ g=WeightedGraph()
         @test v5 in g.vertices
    end
 
-    # (e) Tests that should throw an ArgumentError when adding vertices adds a vertex that already exists.
+# (e) Tests that should throw an ArgumentError when adding vertices adds a vertex that already exists.
    @testset "This vertex already exists" begin  
         @test_throws ArgumentError addVertex!(g,v1)
         @test_throws ArgumentError addVertices!(g, [v2,v3])
         @test_throws ArgumentError addVertices!(g, v4,v5)
+    end
+
+# (f) All other tests.
+    @testset "Add edge" begin
+    addEdge!(g, e1)
+        @test isa(g, WeightedGraph)
+        @test e1 in g.edges
+    end
+
+    @testset "Add vector of edges" begin
+    addEdges!(g,[e2,e3])
+        @test isa(g, WeightedGraph)
+        @test e2 in g.edges
+        @test e3 in g.edges
+    end
+    
+    @testset "Add edges" begin
+    addEdges!(g,e4,e5,e6,e7,e8,e9,e10)
+        @test isa(g, WeightedGraph)
+        @test e4 in g.edges
+        @test e5 in g.edges
+    end
+
+    # @testset "Plot Weighted Graph" begin
+
+p1 = Path([v2, v3, v5, v4], g)
+p2 = Path([v2,v3, v5], g)
+# p3 = Path([v1, v3, v6], g)
+# p4 = Path([v1, v3, v4], g)
+    @testset "Path" begin
+        @test isa(p1, Path)
+        @test isa(p2, Path)
+    end
+
+# arePathVerticesOnGraph (p::Vector{Vertex},g::WeightedGraph)
+    @testset "Are path vertices on the graph" begin
+        @test arePathVerticesOnGraph(p1.path,g)==true
+        @test arePathVerticesOnGraph(p2.path,g)==true
+        @test arePathVerticesOnGraph([v1, v3, v6], g)==false
+    end
+
+# doPathVerticesHaveEdgesOnGraph (p::Vector{Vertex},g::WeightedGraph)
+    @testset "Do path vertices share edges?" begin
+        @test doPathVerticesHaveEdgesOnGraph(p1.path,g)==true
+        @test doPathVerticesHaveEdgesOnGraph(p2.path,g)==true
+        @test doPathVerticesHaveEdgesOnGraph([v1, v3, v6],g)==false
+    end
+
+# distance (P::Path)
+    @testset "Distance" begin
+        @test distance(p1)==(e3.weight+e5.weight+e4.weight)
+        @test distance(p2)==(e3.weight+e5.weight)
+    end
+       
+# solveTSP(g::WeightedGraph)
+    @testset "Solve TSP" begin
+output = solveTSP(g)
+    @test isa(output, Vector)
+    @test v1 in output
+    @test v2 in output
+    @test v3 in output
+    @test v4 in output
+    @test v5 in output
+    end
+
+# findShortestPath(start::Vertex,finish::Vertex,g::WeightedGraph)
+    @testset "Find Shortest Path" begin
+    shortestPath1 = findShortestPath(v1, v5, g)
+    shortestPath2 = findShortestPath(v3, v4, g)
+    shortestPath3 = findShortestPath(v2, v3, g)
+        @test shortestPath1.Distance == 7
+        @test shortestPath1.Path == [v1,v3,v5]
+        @test shortestPath2.Distance == 2
+        @test shortestPath2.Path == [v3, v4]
+        @test shortestPath3.Distance == 6
+        @test shortestPath3.Path == [v2, v4, v3]
+
     end

@@ -133,8 +133,8 @@ struct Path
   path::Vector{Vertex}
   graph::WeightedGraph
   function Path(p::Vector{Vertex},g::WeightedGraph)
-    arePathVerticesOnGraph(p,g) || throw(ArgumentError("One of the vertices in the path is not on the the graph"))
-    doPathVerticesHaveEdgesOnGraph(p,g) || throw(ArgumentError("Two of the vertices in the path do not share an edge on the the graph"))
+    arePathVerticesOnGraph(p,g) || throw(ArgumentError("One of the vertices in the path is not on the graph"))
+    doPathVerticesHaveEdgesOnGraph(p,g) || throw(ArgumentError("Two of the vertices in the path do not share an edge on the graph"))
     new(p,g)
     #p
   end

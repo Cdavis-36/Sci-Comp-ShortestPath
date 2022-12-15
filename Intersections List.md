@@ -1,0 +1,18 @@
+Intersections
+
+Pearl Street and John Fitch Hwy (Fitchburg)
+North Street and Main Street (Fitchburg)
+John Fitch Hwy and Lunenburg Street (Fitchburg)
+White Street and Massachusetts Avenue (Fitchburg)
+Electric Avenue and Massachusetts Avenue (Fitchburg)
+Electric Avenue and Whalom Road (Fitchburg)
+Whalom Road and Summer Street (Fitchburg)
+South Street and Laurel Street (Fitchburg)
+South Street and Wanoosnoc Rd (Fitchburg)
+Water Street and Bemis Rd (Fitchburg)
+Summer Street and John Fitch Hwy (Fitchburg)
+North Street and Main Street (Lunenburg)
+Main Street and Prospect Street (Lunenburg)
+N. Main Street and Rte 2 (Lunenburg)
+Merriam Ave and Rte 2 (Lunenburg)
+Haws Street and Commercial Road (Lunenburg)
