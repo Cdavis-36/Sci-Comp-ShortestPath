@@ -21,10 +21,14 @@ v6 = Vertex(:f)
 # (b) Test that creating an edge works.
 e1 = Edge(:a, :b, 7)
 e2 = Edge(:a, :c, 4)
-e3 = Edge(:b, :c, 5)
+e3 = Edge(:b, :c, 9)
 e4 = Edge(:d, :e, 2)
-e5 = Edge(:e, :c, 3)
+e5 = Edge(:c, :e, 3)
 e6 = Edge(:a, :d, 6)
+e7 = Edge(:a, :e, 9)
+e8 = Edge(:b, :d, 4)
+e9 = Edge(:b, :e, 8)
+e10= Edge(:c, :d, 2)
 
 
      @testset "Edge" begin
@@ -82,7 +86,7 @@ g=WeightedGraph()
     end
     
     @testset "Add edges" begin
-    addEdges!(g,e4,e5, e6)
+    addEdges!(g,e4,e5,e6,e7,e8,e9,e10)
         @test isa(g, WeightedGraph)
         @test e4 in g.edges
         @test e5 in g.edges
@@ -111,7 +115,6 @@ p2 = Path([v2,v3, v5], g)
         @test doPathVerticesHaveEdgesOnGraph(p1.path,g)==true
         @test doPathVerticesHaveEdgesOnGraph(p2.path,g)==true
         @test doPathVerticesHaveEdgesOnGraph([v1, v3, v6],g)==false
-        @test doPathVerticesHaveEdgesOnGraph([v1, v3, v4],g)==false
     end
 
 # distance (P::Path)
@@ -122,9 +125,25 @@ p2 = Path([v2,v3, v5], g)
        
 # solveTSP(g::WeightedGraph)
     @testset "Solve TSP" begin
-        @test solveTSP(g)
+output = solveTSP(g)
+    @test isa(output, Vector)
+    @test v1 in output
+    @test v2 in output
+    @test v3 in output
+    @test v4 in output
+    @test v5 in output
     end
 
+# findShortestPath(start::Vertex,finish::Vertex,g::WeightedGraph)
+    @testset "Find Shortest Path" begin
+    shortestPath1 = findShortestPath(v1, v5, g)
+    shortestPath2 = findShortestPath(v3, v4, g)
+    shortestPath3 = findShortestPath(v2, v3, g)
+        @test shortestPath1.Distance == 7
+        @test shortestPath1.Path == [v1,v3,v5]
+        @test shortestPath2.Distance == 2
+        @test shortestPath2.Path == [v3, v4]
+        @test shortestPath3.Distance == 6
+        @test shortestPath3.Path == [v2, v4, v3]
 
-# findShortestPath
-
+    end
