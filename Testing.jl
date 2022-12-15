@@ -19,16 +19,16 @@ v6 = Vertex(:f)
     end
 
 # (b) Test that creating an edge works.
-e1 = Edge(:a, :b, 7)
-e2 = Edge(:a, :c, 4)
-e3 = Edge(:b, :c, 9)
-e4 = Edge(:d, :e, 2)
-e5 = Edge(:c, :e, 3)
-e6 = Edge(:a, :d, 6)
-e7 = Edge(:a, :e, 9)
-e8 = Edge(:b, :d, 4)
-e9 = Edge(:b, :e, 8)
-e10= Edge(:c, :d, 2)
+e1 = WeightedGraphs.Edge(:a, :b, 7)
+e2 = WeightedGraphs.Edge(:a, :c, 4)
+e3 = WeightedGraphs.Edge(:b, :c, 9)
+e4 = WeightedGraphs.Edge(:d, :e, 2)
+e5 = WeightedGraphs.Edge(:c, :e, 3)
+e6 = WeightedGraphs.Edge(:a, :d, 6)
+e7 = WeightedGraphs.Edge(:a, :e, 9)
+e8 = WeightedGraphs.Edge(:b, :d, 4)
+e9 = WeightedGraphs.Edge(:b, :e, 8)
+e10= WeightedGraphs.Edge(:c, :d, 2)
 
 
      @testset "Edge" begin
@@ -92,7 +92,14 @@ g=WeightedGraph()
         @test e5 in g.edges
     end
 
-    # @testset "Plot Weighted Graph" begin
+# plotWeightedGraph(g::WeightedGraph)
+    @testset "Plot Weighted Graph" begin
+    g2 = WeightedGraph()
+    addVertices!(g2,v1,v2)
+    addEdges!(g2,e1)
+    f = plotWeightedGraph(g)
+        @test isa(f, typeof(plotWeightedGraph(g2)))
+    end
 
 p1 = Path([v2, v3, v5, v4], g)
 p2 = Path([v2,v3, v5], g)
